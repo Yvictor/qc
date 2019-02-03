@@ -1,0 +1,56 @@
+version: '3'
+services:
+  redis:
+    image: redis:5-alpine
+    volumes: 
+        - /data/qc/redis:/data
+    ports:
+        - 6380:6379
+    container_name: redis-qc
+    restart: always
+    networks:
+      - backend 
+
+  ardb:
+    build:
+      context: .
+      dockerfile: Dockerfile-ardb
+    image: ardb:qc
+    volumes: 
+        - /data/qc/ardb:/var/lib/ardb
+    ports:
+        - 16379:16379
+    container_name: ardb-qc
+    restart: always
+    networks:
+      - backend
+  
+  qc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: qc:qc
+    env_file: .env
+    environment:
+      - REDIS_HOST=redis-qc
+      - REDIS_PORT=6379
+      - REDIS_DBN=0
+      - ARDB_HOST=ardb-qc
+      - ARDB_PORT=16379
+      - ARDB_DBN=0
+      - LOG_LEVEL=INFO
+      - LOG_FILE=qc.log
+    volumes: 
+        - /data/qc/log:/opt/qc
+    container_name: qc-qc
+    depends_on:
+      - redis
+      - ardb
+    restart: always
+    networks:
+      - backend   
+    
+
+networks: 
+  backend:
+    driver: bridge
