@@ -79,7 +79,7 @@ def redis2ardb():
             log.info('KEY: {}, EMPTY DELETED'.format(k))
         end_time = time.time()
         log.info('KEY: {}, SPEND: {:.6f}s'.format(k, end_time-start_time))
-        log.info('TOTAL SPEND: {}'.format(k, dt.datetime.fromtimestamp(end_time)-dt.datetime.fromtimestamp(init_time)))
+        log.info('TOTAL SPEND: {}'.format(dt.datetime.fromtimestamp(end_time)-dt.datetime.fromtimestamp(init_time)))
 
 jobstores = {
     'default': MemoryJobStore()
