@@ -1,11 +1,11 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "5ae851d00c6305a3bf419ed4cee7f4bd0b9ae467283342c8f21737190aaeac6c"
+            "sha256": "921957a125c628ffb7f784bee9e3b8473fd788166b5580aec118e17f07dbd110"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.5"
+            "python_version": "3.7"
         },
         "sources": [
             {
@@ -23,6 +23,18 @@
             ],
             "index": "pypi",
             "version": "==3.5.3"
+        },
+        "pysolace": {
+            "hashes": [
+                "sha256:3a8e49648d9efd3d02a8e085d893160b4afa37ddaec81e864901af3b4a229f5a",
+                "sha256:4431d6d5c96089d3bcbd5af0905010d78338e849e3cbc959eff779aeca322822",
+                "sha256:960baa777c3a37b04448f47b690925bbf8573b13c2926a52d3b14c53c8626f68",
+                "sha256:a0485da5e2d9d7ac55558c7e4ac528088fec12bf2151043fbda0f3886f90ab55",
+                "sha256:c037b1f301b8ce586f0d5564fe3a97ab4e1f381b9317b6a03ed35e5c29a1fef8",
+                "sha256:ddfff8571175d154f46f5bcd907b09ce6f838c438489fcb451580798812adf57"
+            ],
+            "index": "pypi",
+            "version": "==0.0.1"
         },
         "pytz": {
             "hashes": [

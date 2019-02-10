@@ -1,11 +1,13 @@
 import os
-from pysolace import solclient
+import logging
+from logging.handlers import TimedRotatingFileHandler
 import time
 import datetime as dt
 import ujson
 import redis
 import pytz
-from apscheduler.schedulers.background import BackgroundScheduler
+from pysolace import solclient
+from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 
@@ -29,7 +31,7 @@ assert LOG_LEVEL in allow_log_level, "LOG_LEVEL not allow, choice {}".format(
 LOGGING_LEVEL = getattr(logging, LOG_LEVEL)
 log = logging.getLogger('qc')
 log.setLevel(LOGGING_LEVEL)
-console_handler = logging.handlers.TimedRotatingFileHandler(LOG_FILE, when='D', interval=1, backupCount=10)
+console_handler = TimedRotatingFileHandler(LOG_FILE, when='D', interval=1, backupCount=10)
 console_handler.setLevel(LOGGING_LEVEL)
 log_formatter = logging.Formatter(
     '[%(levelname)1.1s %(asctime)s %(pathname)s:%(lineno)4d:%(funcName)s] %(message)s'
@@ -42,8 +44,10 @@ redis_cache = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DBN)
 ardb = redis.Redis(ARDB_HOST, ARDB_PORT, ARDB_DBN)
 
 def called_by_c(topic, json_string):
+    recv_t = str(dt.datetime.now())
     parsed = ujson.loads(json_string)
     parsed['t'] = str(dt.datetime.now())#time.time()
+    parsed['recv_t'] = recv_t
     redis_cache.rpush(topic, ujson.dumps(parsed))
     return 0
 
@@ -53,12 +57,13 @@ solclient.subscribe(sol, "MKT/*/*/*")
 solclient.subscribe(sol, "QUT/*/*/*")
 
 solclient.subscribe(sol, "L/*/*")
-solclient.subscribe(sol, "Q/*/*")  #TXFB9
+solclient.subscribe(sol, "Q/*/*") 
 
 
-def mem2disk():
+def redis2ardb():
     rs_keys = redis_cache.keys()
     key_n = len(rs_keys)
+    init_time = time.time()
     for i, k in enumerate(rs_keys):
         log.info('KEY: {}, {}/{} [{:.2f}]%'.format(k, i+1, key_n, ((i+1)/key_n)*100))
         start_time = time.time()
@@ -74,6 +79,7 @@ def mem2disk():
             log.info('KEY: {}, EMPTY DELETED'.format(k))
         end_time = time.time()
         log.info('KEY: {}, SPEND: {:.6f}s'.format(k, end_time-start_time))
+        log.info('TOTAL SPEND: {}'.format(k, dt.datetime.fromtimestamp(end_time)-dt.datetime.fromtimestamp(init_time)))
 
 jobstores = {
     'default': MemoryJobStore()
@@ -84,5 +90,5 @@ executors = {
 }
 scheduler = BlockingScheduler(jobstores=jobstores, executors=executors, timezone=pytz.timezone('Asia/Taipei'))
 
-scheduler.add_job(redis2ardb, trigger='cron', hour='5', minute='5', id='redis2ardb')
+scheduler.add_job(redis2ardb, trigger='cron', hour='5', minute='2', id='redis2ardb')
 scheduler.start()

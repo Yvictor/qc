@@ -5,12 +5,29 @@ services:
     volumes: 
         - /data/qc/redis:/data
     ports:
-        - 6380:6379
+        - 6379:6379
     container_name: redis-qc
     restart: always
     networks:
       - backend 
-
+      
+  redis_monitor:
+    image: redsmin/proxy
+    environment:
+      - REDIS_URI=redis://redis-qc:6379
+      - REDSMIN_KEY=
+    container_name: redis-redsmin-qc
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "10"
+    depends_on:
+      - redis
+    restart: always
+    networks:
+      - backend
+  
   ardb:
     build:
       context: .
@@ -24,6 +41,25 @@ services:
     restart: always
     networks:
       - backend
+  
+  ardb_monitor:
+    image: redsmin/proxy
+    environment:
+      - REDIS_URI=redis://ardb-qc:16379
+      - REDSMIN_KEY=
+    #command: REDIS_URI=$REDIS_URI REDSMIN_KEY=$REDSMIN_KEY redsmin
+    container_name: ardb-redsmin-qc
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "10"
+    depends_on:
+      - ardb
+    restart: always
+    networks:
+      - backend
+  
   
   qc:
     build:
@@ -40,8 +76,9 @@ services:
       - ARDB_DBN=0
       - LOG_LEVEL=INFO
       - LOG_FILE=qc.log
+      - PYTHONUNBUFFERED=1
     volumes: 
-        - /data/qc/log:/opt/qc
+        - ./:/opt/qc
     container_name: qc-qc
     depends_on:
       - redis
