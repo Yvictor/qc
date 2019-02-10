@@ -9,7 +9,8 @@ verify_ssl = true
 ujson = "*"
 redis = "*"
 apscheduler = "*"
-pysolace = "*"
+pysolace = "==0.0.3"
+msgpack = "*"
 
 [requires]
 python_version = "3.7"

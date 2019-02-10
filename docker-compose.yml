@@ -28,37 +28,6 @@ services:
     networks:
       - backend
   
-  ardb:
-    build:
-      context: .
-      dockerfile: Dockerfile-ardb
-    image: ardb:qc
-    volumes: 
-        - /data/qc/ardb:/var/lib/ardb
-    ports:
-        - 16379:16379
-    container_name: ardb-qc
-    restart: always
-    networks:
-      - backend
-  
-  ardb_monitor:
-    image: redsmin/proxy
-    environment:
-      - REDIS_URI=redis://ardb-qc:16379
-      - REDSMIN_KEY=
-    #command: REDIS_URI=$REDIS_URI REDSMIN_KEY=$REDSMIN_KEY redsmin
-    container_name: ardb-redsmin-qc
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "10"
-    depends_on:
-      - ardb
-    restart: always
-    networks:
-      - backend
   
   
   qc:
@@ -79,10 +48,10 @@ services:
       - PYTHONUNBUFFERED=1
     volumes: 
         - ./:/opt/qc
+        - /data/qc/redis:/data/redis
     container_name: qc-qc
     depends_on:
       - redis
-      - ardb
     restart: always
     networks:
       - backend   
