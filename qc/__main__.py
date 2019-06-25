@@ -93,6 +93,12 @@ def event_callback(resp_code, event, info, event_str):
         solclient.subscribe(sol, "QUT/>")
         solclient.subscribe(sol, "L/>")
         solclient.subscribe(sol, "Q/>") 
+        solclient.subscribe(sol, "I/>") 
+        solclient.subscribe(sol, "O/>") 
+        solclient.subscribe(sol, "IUD/>") 
+        solclient.subscribe(sol, "ST/>") 
+        solclient.subscribe(sol, "OT/>") 
+
 
         
 solclient.set_callback(quote_callback)
